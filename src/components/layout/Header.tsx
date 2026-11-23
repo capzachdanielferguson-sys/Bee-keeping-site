@@ -49,7 +49,7 @@ export function Header() {
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] px-3 pt-3 sm:px-5 sm:pt-4">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] px-3 pt-[calc(12px+env(safe-area-inset-top,0px))] sm:px-5 sm:pt-[calc(16px+env(safe-area-inset-top,0px))]">
         <div
           className={cn(
             'pointer-events-auto mx-auto max-w-[1400px] transition-[filter] duration-300',

@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { RouterProvider, createBrowserRouter, createHashRouter, useParams, type RouteObject } from 'react-router'
+import { RouterProvider, createBrowserRouter, createHashRouter, createMemoryRouter, useParams, type RouteObject } from 'react-router'
 
 import { Layout } from '@/components/layout/Layout'
 import { ToastProvider } from '@/components/ui/toast'
@@ -65,8 +65,11 @@ const routes: RouteObject[] = [
   },
 ]
 
-// `npm run build:static` sets VITE_ROUTER=hash for hosts without SPA rewrites.
-const router = import.meta.env.VITE_ROUTER === 'hash' ? createHashRouter(routes) : createBrowserRouter(routes)
+// `npm run build:static` sets VITE_ROUTER=hash for hosts without SPA rewrites;
+// VITE_ROUTER=memory is for sandboxed embeds (previews) that can't own the URL.
+const mode = import.meta.env.VITE_ROUTER
+const router =
+  mode === 'hash' ? createHashRouter(routes) : mode === 'memory' ? createMemoryRouter(routes) : createBrowserRouter(routes)
 
 export default function App() {
   return (
