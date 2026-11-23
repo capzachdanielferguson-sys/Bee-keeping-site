@@ -1,0 +1,330 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ------------------------------------------------------------------ *
+ * yourstripes design tokens
+ * Palette: "Buttercream" base (palettes-100 p039) + a bright pixel-game
+ * accent set (honey, meadow, sky, poppy). Ink is a deep olive, not black.
+ * ------------------------------------------------------------------ */
+@theme {
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-pixel: "Silkscreen", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --color-cream: #fbf3d8;      /* page background */
+  --color-paper: #fffbee;      /* raised surfaces */
+  --color-card: #f8e6c4;       /* product photo backdrop — matches the shots */
+  --color-wax: #f3dca8;        /* deeper cream for wells / borders */
+  --color-ink: #17200f;        /* primary text — 15.1:1 on cream */
+  --color-ink-soft: #3b4230;   /* secondary text — 9.4:1 on cream */
+  --color-muted: #5f5a3c;      /* tertiary text — 6.3:1 on cream */
+
+  --color-honey: #f5b700;      /* brand fill (never as small text on cream) */
+  --color-honey-light: #ffd84d;
+  --color-honey-deep: #8b5a0b; /* honey as text — 5.3:1 on cream */
+
+  --color-meadow: #2e7d32;
+  --color-meadow-deep: #173d1f;
+  --color-leaf: #7bc043;
+  --color-sky: #6ec6f5;
+  --color-sky-deep: #1f5f8f;
+  --color-poppy: #e8483c;
+  --color-petal: #ff8fa3;
+  --color-lilac: #9b7be0;
+
+  --radius-px: 0px;
+
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  --animate-wing: wing 0.18s steps(1) infinite;
+  --animate-blink: blink 1s steps(1) infinite;
+  --animate-bob: bob 1.6s steps(4) infinite;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-sway: sway 1.4s steps(2) infinite;
+
+  @keyframes wing {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes sway {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(2px); }
+  }
+}
+
+:root {
+  color-scheme: light;
+  /* Size of one "pixel" step in notched corners and frames. */
+  --px: 4px;
+  --shadow-hard: 0 4px 0 0 var(--color-ink);
+}
+
+/* Element defaults live in the base layer so Tailwind utilities can override them. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-feature-settings: "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-honey);
+    color: var(--color-ink);
+  }
+
+  /* Display type: Fraunces with the SOFT axis maxed for smooth, rounded terminals. */
+  .font-display,
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 100, "WONK" 0;
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+
+  .font-pixel {
+    font-family: var(--font-pixel);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    -webkit-font-smoothing: none;
+  }
+
+  .tabular { font-variant-numeric: tabular-nums lining-nums; }
+
+  /* Accessible focus ring: thick, pixel-square, high contrast. */
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 0;
+  }
+
+  .skip-link {
+    position: fixed;
+    left: 16px;
+    top: -64px;
+    z-index: 200;
+    background: var(--color-ink);
+    color: var(--color-cream);
+    padding: 10px 16px;
+    font-weight: 700;
+    transition: top 0.15s;
+  }
+  .skip-link:focus { top: 16px; }
+}
+
+/* Pixel primitives live in the components layer — utilities (absolute, font-sans…) still win. */
+@layer components {
+  /* ------------------------------------------------------------------ *
+   * Pixel primitives
+   * ------------------------------------------------------------------ */
+
+  /* One-step notched corners (classic 8/16-bit window shape). */
+  .px-notch {
+    clip-path: polygon(
+      0 var(--px), var(--px) var(--px), var(--px) 0,
+      calc(100% - var(--px)) 0, calc(100% - var(--px)) var(--px), 100% var(--px),
+      100% calc(100% - var(--px)), calc(100% - var(--px)) calc(100% - var(--px)), calc(100% - var(--px)) 100%,
+      var(--px) 100%, var(--px) calc(100% - var(--px)), 0 calc(100% - var(--px))
+    );
+  }
+
+  /* Two-step notched corners for larger panels. */
+  .px-notch-2 {
+    clip-path: polygon(
+      0 calc(var(--px) * 2), var(--px) calc(var(--px) * 2), var(--px) var(--px), calc(var(--px) * 2) var(--px), calc(var(--px) * 2) 0,
+      calc(100% - var(--px) * 2) 0, calc(100% - var(--px) * 2) var(--px), calc(100% - var(--px)) var(--px), calc(100% - var(--px)) calc(var(--px) * 2), 100% calc(var(--px) * 2),
+      100% calc(100% - var(--px) * 2), calc(100% - var(--px)) calc(100% - var(--px) * 2), calc(100% - var(--px)) calc(100% - var(--px)), calc(100% - var(--px) * 2) calc(100% - var(--px)), calc(100% - var(--px) * 2) 100%,
+      calc(var(--px) * 2) 100%, calc(var(--px) * 2) calc(100% - var(--px)), var(--px) calc(100% - var(--px)), var(--px) calc(100% - var(--px) * 2), 0 calc(100% - var(--px) * 2)
+    );
+  }
+
+  /* Notched outline: wrapper paints the frame color, child paints the fill. */
+  .px-frame {
+    --frame: var(--color-ink);
+    background: var(--frame);
+    padding: 2px;
+  }
+  .px-frame > .px-fill { height: 100%; }
+
+  /* Hard, offset game shadow that follows a clipped shape. */
+  .px-shadow { filter: drop-shadow(0 4px 0 var(--color-ink)); }
+  .px-shadow-soft { filter: drop-shadow(0 4px 0 rgb(23 32 15 / 0.18)); }
+
+  /* Crisp scaling for pixel art. */
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  /* Subtle CRT scanlines for HUD surfaces. */
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.06) 0,
+      rgb(255 255 255 / 0.06) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  /* 1-bit honeycomb dither used as a quiet texture. */
+  .bg-comb {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' shape-rendering='crispEdges'%3E%3Cpath fill='%23f3dca8' d='M8 0h8v2H8zM6 2h2v2H6zM16 2h2v2h-2zM4 4h2v6H4zM18 4h2v6h-2zM6 10h2v2H6zM16 10h2v2h-2zM8 12h8v2H8zM0 14h4v2H0zM20 14h4v2h-4zM8 14h2v2H8zM14 14h2v2h-2z'/%3E%3C/svg%3E");
+    background-size: 24px 28px;
+  }
+
+  /* Checkerboard dither between two colors (for pixel sky transitions). */
+  .dither {
+    background-image: conic-gradient(var(--d1) 25%, var(--d2) 0 50%, var(--d1) 0 75%, var(--d2) 0);
+    background-size: 4px 4px;
+  }
+
+  /* Pixel steps underline for nav links. */
+  .px-underline {
+    background-image: linear-gradient(var(--color-honey), var(--color-honey));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 4px;
+    transition: background-size 0.24s steps(6);
+  }
+  .px-underline:hover,
+  .px-underline[aria-current="page"] { background-size: 100% 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  /* Hide scrollbars on horizontal chip rows while keeping them scrollable. */
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* ------------------------------------------------------------------ *
+   * Flying sprites (bees, clouds) — travel the full container width.
+   * ------------------------------------------------------------------ */
+  .ys-flyers { container-type: size; }
+  .ys-flyer {
+    animation-name: ys-fly-across;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+  @keyframes ys-fly-across {
+    from { transform: translateX(-140px); }
+    to { transform: translateX(calc(100cqw + 40px)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ys-flyer { animation: none !important; transform: translateX(var(--rest, 18cqw)); }
+    .ys-flyer:nth-child(2) { --rest: 64cqw; }
+    .ys-flyer:nth-child(3) { --rest: 40cqw; }
+    .ys-flyer:nth-child(4) { --rest: 82cqw; }
+  }
+
+  /* Pixel route-transition blocks. */
+  @keyframes ys-block-out {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Pixel button — ink frame (::before), fill (::after), hard drop shadow
+   * that collapses when pressed, like a physical arcade button.
+   * ------------------------------------------------------------------ */
+  .btn-px {
+    --btn-frame: var(--color-ink);
+    --btn-fill: var(--color-honey);
+    --btn-fill-hover: var(--color-honey-light);
+    --btn-fg: var(--color-ink);
+    --btn-shadow: var(--color-ink);
+    --btn-lift: 4px;
+    position: relative;
+    isolation: isolate;
+    color: var(--btn-fg);
+    filter: drop-shadow(0 var(--btn-lift) 0 var(--btn-shadow));
+    transition: transform 0.12s steps(2), filter 0.12s steps(2);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-px::before,
+  .btn-px::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    clip-path: polygon(
+      0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
+      100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
+      4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
+    );
+  }
+  .btn-px::before { inset: 0; background: var(--btn-frame); }
+  .btn-px::after {
+    inset: 2px;
+    background: var(--btn-fill);
+    box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.12), inset 0 3px 0 rgb(255 255 255 / 0.32);
+    clip-path: polygon(
+      0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px,
+      100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%,
+      2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)
+    );
+    transition: background-color 0.15s steps(2);
+  }
+  .btn-px:hover::after { background: var(--btn-fill-hover); }
+  .btn-px:active:not(:disabled) {
+    transform: translateY(var(--btn-lift));
+    filter: drop-shadow(0 0 0 var(--btn-shadow));
+  }
+  .btn-px:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .btn-px--ink {
+    --btn-frame: var(--color-ink);
+    --btn-fill: var(--color-ink);
+    --btn-fill-hover: #26321a;
+    --btn-fg: var(--color-cream);
+    --btn-shadow: var(--color-honey-deep);
+  }
+  .btn-px--paper {
+    --btn-fill: var(--color-paper);
+    --btn-fill-hover: #ffffff;
+  }
+  .btn-px--meadow {
+    --btn-fill: var(--color-leaf);
+    --btn-fill-hover: #92d15b;
+  }
+  .btn-px--onDark {
+    --btn-frame: var(--color-ink);
+    --btn-shadow: #0b1207;
+  }
+}
