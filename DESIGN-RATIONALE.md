@@ -6,9 +6,9 @@
 
 ## Core idea
 
-> **The real meadow dissolves into the game meadow.**
+> **A real meadow, framed by a game world.**
 
-The hero is real, cinematic footage. Scroll down and it **pixelates** into the pixel-art world the rest of the site lives in. Toggle **8-bit mode** and the same footage re-renders as a 16-color console cut-scene. Everything structural (panels, buttons, landscapes, sprites, HUD labels) is pixel art. Everything you *read* (headlines, body copy, prices) stays smooth and high-contrast. That split is the brief made literal: smooth letters, digital pieces.
+The hero is real, cinematic footage, left untouched with no filters or pixel effects so it reads as premium. The game world frames it: the RPG dialogue box holding the headline, and the pixel-grass strip at its bottom edge that leads into the pixel-art world the rest of the site lives in. Everything structural (panels, buttons, landscapes, sprites, labels) is pixel art. Everything you *read* (headlines, body copy, prices) stays smooth and high-contrast. That split is the brief made literal: smooth letters, digital pieces.
 
 ## References (from the curated set)
 
@@ -18,7 +18,7 @@ The hero is real, cinematic footage. Scroll down and it **pixelates** into the p
 | **Mejuri** | No pure black anywhere. The ink is a deep olive (`#17200F`), so the palette stays warm against honey and cream. |
 | **Patagonia** | Earthy greens used as structure (footer, menu, HiveSense band), and brand values given real estate next to product. |
 
-Retro-game references guide the motifs rather than the layout: RPG dialogue boxes (the hero copy panel), item-stat bars (product pages), a quest log (the bundle), HUD readouts, selection-cursor brackets on hover, and screen-dissolve transitions.
+Retro-game references guide the motifs rather than the layout: RPG dialogue boxes (the hero copy panel), item-stat bars (product pages), a quest log (the bundle), a HUD-style dashboard (HiveSense), selection-cursor brackets on hover, and screen-dissolve transitions.
 
 ## Palette
 
@@ -56,7 +56,7 @@ The headline is **"Beekeeping gear that earns its stripes."** It is specific to 
 
 | Motion | Where | What it communicates |
 | --- | --- | --- |
-| Scroll pixelation and 8-bit mode | Hero | The core idea: real footage becomes the game world |
+| Looping bee-flight footage (unfiltered) | Hero | The product's world in one shot; pausable |
 | Clip-path wipe and staggered reveal (21st.dev) | Full-screen menu | Spatial: the menu is a separate "screen" |
 | Sliding pill and field reveal (21st.dev) | Sign up / log in | Which mode you're in, and which fields appear |
 | Pixel click sparks; honey burst | Every click; add to cart, sign up, orders | Feedback: the click registered and the action succeeded |

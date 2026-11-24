@@ -7,49 +7,21 @@ import { Button } from '@/components/ui/button'
 import { PixelMeadow } from '@/components/pixel/PixelScenery'
 import { PixelSprite } from '@/components/pixel/PixelSprite'
 import { BEE_TOP, HEART, HONEY_DROP, SPARKLE } from '@/components/pixel/sprites'
-import { renderPixelFrame, type FrameSource } from '@/components/pixel/pixelate'
 import { HERO_VIDEO } from '@/data/media'
 import { PRODUCTS, getProduct } from '@/data/products'
 import { asset, cn, formatPrice, numberWord, prefersReducedMotion } from '@/lib/utils'
 
 const starter = getProduct('meadow-starter-hive')!
 
-/** Ticking HUD readout — numbers drift like live telemetry. */
-function useTelemetry(active: boolean) {
-  const [t, setT] = useState({ alt: 0.8, spd: 24, pollen: 3 })
-  useEffect(() => {
-    if (!active) return
-    const id = window.setInterval(() => {
-      setT((p) => ({
-        alt: Math.max(0.4, Math.min(1.6, +(p.alt + (Math.random() - 0.5) * 0.2).toFixed(1))),
-        spd: Math.max(18, Math.min(29, Math.round(p.spd + (Math.random() - 0.5) * 3))),
-        pollen: p.pollen >= 5 ? 1 : p.pollen + (Math.random() < 0.35 ? 1 : 0),
-      }))
-    }, 900)
-    return () => window.clearInterval(id)
-  }, [active])
-  return t
-}
-
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const posterRef = useRef<HTMLImageElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [paused, setPaused] = useState(false)
-  const [eightBit, setEightBit] = useState(false)
-  const [pixelVisible, setPixelVisible] = useState(false)
-  const eightBitRef = useRef(eightBit)
-  useEffect(() => {
-    eightBitRef.current = eightBit
-  }, [eightBit])
-
-  const telemetry = useTelemetry(!paused)
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
   const boxY = useTransform(scrollYProgress, [0, 1], [0, -80])
-  const hudOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0])
+  const controlsOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0])
 
   // Start playback explicitly (muted, so every browser allows autoplay), and
   // respect reduced motion by staying paused on the poster frame.
@@ -66,53 +38,6 @@ export function Hero() {
     tryPlay()
     v.addEventListener('canplay', tryPlay)
     return () => v.removeEventListener('canplay', tryPlay)
-  }, [])
-
-  // Pixelation loop: scroll progress → block size; 8-bit mode → palette remap.
-  useEffect(() => {
-    const section = sectionRef.current
-    const canvas = canvasRef.current
-    if (!section || !canvas) return
-    let raf = 0
-    let inView = true
-    const reduced = prefersReducedMotion()
-
-    const io = new IntersectionObserver(([e]) => {
-      inView = e.isIntersecting
-      if (inView && !raf) raf = requestAnimationFrame(loop)
-    })
-    io.observe(section)
-
-    const loop = () => {
-      raf = 0
-      if (!inView) return
-      const rect = section.getBoundingClientRect()
-      const progress = Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height)))
-      let block = reduced ? 1 : 1 + Math.round(Math.pow(progress, 1.35) * 30)
-      const quantize = eightBitRef.current
-      if (quantize) block = Math.max(block, 7)
-
-      const v = videoRef.current
-      const useVideo = v && v.readyState >= 2 && !v.error
-      const src: FrameSource | null = useVideo ? v : posterRef.current?.complete ? posterRef.current : null
-
-      if (block > 1 && src) {
-        const box = canvas.getBoundingClientRect()
-        // Match the <video>'s object-position (60% on small screens, centred on desktop).
-        const focus = window.innerWidth >= 1024 ? { x: 0.5, y: 0.5 } : { x: 0.6, y: 0.5 }
-        const drawn = renderPixelFrame(canvas, src, box.width, box.height, block, quantize, focus)
-        setPixelVisible(drawn)
-      } else {
-        setPixelVisible(false)
-      }
-      raf = requestAnimationFrame(loop)
-    }
-    raf = requestAnimationFrame(loop)
-
-    return () => {
-      io.disconnect()
-      cancelAnimationFrame(raf)
-    }
   }, [])
 
   const togglePause = () => {
@@ -135,7 +60,6 @@ export function Hero() {
     >
       {/* Poster first (LCP), video fades in once frames arrive. */}
       <img
-        ref={posterRef}
         src={asset(HERO_VIDEO.poster)}
         alt=""
         aria-hidden="true"
@@ -154,7 +78,6 @@ export function Hero() {
         loop
         playsInline
         preload="auto"
-        crossOrigin="anonymous"
         poster={asset(HERO_VIDEO.poster)}
         onPlaying={() => setPlaying(true)}
         aria-hidden="true"
@@ -169,71 +92,19 @@ export function Hero() {
         <source src={asset(HERO_VIDEO.bundled)} type="video/mp4" />
       </video>
 
-      {/* Low-res pixel layer (scroll-driven + 8-bit mode). */}
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        className={cn(
-          'pixelated pointer-events-none absolute inset-x-0 top-0 -z-[5] h-[66svh] w-full max-w-none transition-opacity duration-150 lg:inset-y-0 lg:left-0 lg:right-auto lg:h-full lg:w-[128%]',
-          pixelVisible ? 'opacity-100' : 'opacity-0',
-        )}
-      />
-
-      {/* Gentle grade so the HUD and dialog sit comfortably over a bright sky. */}
+      {/* Gentle grade so the header and headline box sit comfortably over a bright sky. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-[4] h-[66svh] bg-[linear-gradient(180deg,rgb(23_32_15/0.28)_0%,transparent_22%,transparent_70%,rgb(46_125_50/0.9)_100%)] lg:inset-0 lg:h-full lg:bg-[linear-gradient(180deg,rgb(23_32_15/0.28)_0%,transparent_22%,transparent_60%,rgb(23_32_15/0.35)_100%)]" />
 
-      {/* HUD — top right */}
-      <motion.div
-        style={{ opacity: hudOpacity }}
-        className="absolute right-3 top-[88px] z-10 flex flex-col items-end gap-2 sm:right-6 sm:top-[104px]"
+      {/* Pause / play — moving video must be stoppable (WCAG 2.2.2). */}
+      <motion.button
+        type="button"
+        style={{ opacity: controlsOpacity }}
+        onClick={togglePause}
+        aria-label={paused ? 'Play background video' : 'Pause background video'}
+        className="absolute right-4 top-[92px] z-10 grid size-10 place-items-center rounded-full bg-ink/45 text-cream backdrop-blur-sm transition-colors hover:bg-ink/70 sm:right-7 lg:top-[108px]"
       >
-        <div className="font-pixel scanlines flex items-center gap-3 bg-ink/70 px-3 py-2 text-[0.65rem] text-cream backdrop-blur-sm sm:text-xs">
-          <span className="flex items-center gap-1.5">
-            <span className={cn('size-2 bg-poppy', !paused && 'animate-blink')} aria-hidden="true" />
-            {paused ? 'Paused' : 'Rec'}
-          </span>
-          <span className="text-cream/50">|</span>
-          <span>Flight cam 01</span>
-        </div>
-        <div className="font-pixel scanlines hidden gap-4 bg-ink/70 px-3 py-2 text-xs text-cream backdrop-blur-sm sm:flex" aria-hidden="true">
-          <span>
-            Alt <span className="tabular text-honey-light">{telemetry.alt.toFixed(1)}m</span>
-          </span>
-          <span>
-            Spd <span className="tabular text-honey-light">{telemetry.spd}km/h</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            Pollen
-            <span className="flex gap-0.5">
-              {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} className={cn('h-2.5 w-1.5', i < telemetry.pollen ? 'bg-honey' : 'bg-cream/25')} />
-              ))}
-            </span>
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setEightBit((v) => !v)}
-            aria-pressed={eightBit}
-            className={cn(
-              'font-pixel flex h-9 items-center gap-2 px-3 text-[0.65rem] transition-colors sm:text-xs',
-              eightBit ? 'bg-honey text-ink' : 'bg-ink/70 text-cream backdrop-blur-sm hover:bg-ink/85',
-            )}
-          >
-            <PixelSprite sprite={SPARKLE} scale={2} />
-            8-bit {eightBit ? 'on' : 'off'}
-          </button>
-          <button
-            type="button"
-            onClick={togglePause}
-            aria-label={paused ? 'Play background video' : 'Pause background video'}
-            className="grid size-9 place-items-center bg-ink/70 text-cream backdrop-blur-sm transition-colors hover:bg-ink/85"
-          >
-            {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
-          </button>
-        </div>
-      </motion.div>
+        {paused ? <Play className="size-4 translate-x-px" /> : <Pause className="size-4" />}
+      </motion.button>
 
       {/* RPG-style dialogue box */}
       <div className="relative px-3 sm:px-6 lg:absolute lg:inset-x-0 lg:bottom-[104px] lg:px-10">

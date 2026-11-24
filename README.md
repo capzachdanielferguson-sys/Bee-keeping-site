@@ -38,7 +38,7 @@ npm run preview       # serve dist/ locally
 
 | Area | Details |
 | --- | --- |
-| **Hero** | Full-bleed looping video of a honeybee seen from behind, flying low through a wildflower meadow. It sits inside an RPG-style dialogue box, with a "flight cam" HUD, a pause button and an **8-bit mode** toggle that re-renders the video live with a 16-color meadow palette and Bayer dithering. Scrolling past the hero progressively pixelates it into the pixel world below. |
+| **Hero** | Full-bleed looping video of a honeybee seen from behind, flying low through a wildflower meadow, shown as clean footage with no filters or effects. The headline sits in an RPG-style dialogue box, with a pause button, and a pixel-grass strip along the bottom edge leads into the page. |
 | **Shop** | 10 products in 5 categories, filter chips and sort. The home page shows the full catalog as a 4×4 bento grid. |
 | **Product pages** | Size picker (jacket and gloves), quantity, RPG-style **item stats** bars, specs, what's in the box, warranty, related items, schema.org `Product` JSON-LD, and an "8-bit view" toggle on the photo. |
 | **Cart** | Slide-over drawer with a free-shipping XP bar, plus the **Starter Quest**: add all five starter essentials and 10% comes off automatically. |
@@ -89,7 +89,7 @@ On desktop the video layer is wider than the screen and anchored left, so the be
 src/
   components/
     pixel/      sprites, procedural meadow/landscape canvases, flying bees,
-                click sparks, route dissolve, live 8-bit pixel shader
+                click sparks, route dissolve, 8-bit photo shader (product pages)
     ui/         21st.dev components (nav, auth) + registry primitives, toast, accordion
     layout/     header, footer, cart drawer, cookie banner, page/info layouts
     home/       hero + home sections
