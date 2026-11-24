@@ -10,7 +10,7 @@ Built with **Vite + React 19 + TypeScript + Tailwind CSS v4**, with **motion** f
 
 ```bash
 npm install
-npm run fetch-media   # optional: self-host the hero video (see "Media" below)
+npm run fetch-media   # optional: self-host the full-quality hero video (see "Media" below)
 npm run dev           # http://localhost:5173
 npm run build         # production build → dist/
 npm run preview       # serve dist/ locally
@@ -21,7 +21,7 @@ npm run preview       # serve dist/ locally
 | `npm run dev` | Dev server with hot reload |
 | `npm run build` | Type-check + production build (clean URLs, `BrowserRouter`) |
 | `npm run build:static` | Portable build: relative paths + hash routing; drops into any static host or sub-folder |
-| `npm run fetch-media` | Downloads the hero video from the Higgsfield CDN into `public/media/` |
+| `npm run fetch-media` | Downloads the full-quality (1080p/720p) hero video from the Higgsfield CDN into `public/media/` |
 | `npm run lint` | oxlint |
 
 ### Deploying
@@ -69,11 +69,17 @@ Everything photographic was generated with the Higgsfield connector:
 - **10 product shots:** GPT Image 2.6, on a matching buttercream backdrop so they blend into the product cards.
 - **Scenes:** a beekeeper lifting a frame, a honeycomb macro, and a second meadow flight.
 
-All images are committed in `public/media/` as optimized JPEGs.
+All images are committed in `public/media/` as optimized JPEGs, along with a 540p copy of the hero loop.
 
 ### Media (hero video)
 
-The hero `<video>` tries `/media/hero-1080.mp4` and `/media/hero-720.mp4` first, then falls back to the same files on Higgsfield's CDN. Run `npm run fetch-media` once to download them, and the site becomes fully self-hosted with no code change. Until then, the poster frame shows instantly and the CDN copy streams in behind it.
+The hero loop ships in the repo as `public/media/hero-540.mp4` (3 MB), so the bee flies everywhere out of the box, including offline, in previews and behind strict firewalls. The `<video>` element picks the best copy it can reach, in this order:
+
+1. `/media/hero-1080.mp4` or `/media/hero-720.mp4`: full quality, self-hosted after `npm run fetch-media`
+2. The same full-quality files on Higgsfield's CDN
+3. `/media/hero-540.mp4`: the bundled copy, always available
+
+On desktop the video layer is wider than the screen and anchored left, so the bee flies in the open area to the right of the headline box. On tablets and phones the footage gets its own window above the box.
 
 ---
 

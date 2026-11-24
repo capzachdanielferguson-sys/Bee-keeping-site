@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Downloads the Higgsfield-generated hero video into /public/media so the
- * site serves it from your own host. The <video> element already prefers
- * these local files and only falls back to the Higgsfield CDN when they are
- * missing — no code change needed after running this.
+ * Downloads the full-quality (1080p / 720p) hero video into /public/media so
+ * the site serves it from your own host. The <video> element already prefers
+ * these local files, then the Higgsfield CDN, then the bundled 540p copy —
+ * no code change needed after running this.
  *
  *   npm run fetch-media
  */

@@ -51,14 +51,21 @@ export function Hero() {
   const boxY = useTransform(scrollYProgress, [0, 1], [0, -80])
   const hudOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0])
 
-  // Respect reduced motion: start paused on the poster frame.
+  // Start playback explicitly (muted, so every browser allows autoplay), and
+  // respect reduced motion by staying paused on the poster frame.
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
+    v.muted = true
     if (prefersReducedMotion()) {
       v.pause()
       setPaused(true)
+      return
     }
+    const tryPlay = () => void v.play().catch(() => undefined)
+    tryPlay()
+    v.addEventListener('canplay', tryPlay)
+    return () => v.removeEventListener('canplay', tryPlay)
   }, [])
 
   // Pixelation loop: scroll progress → block size; 8-bit mode → palette remap.
@@ -91,7 +98,9 @@ export function Hero() {
 
       if (block > 1 && src) {
         const box = canvas.getBoundingClientRect()
-        const drawn = renderPixelFrame(canvas, src, box.width, box.height, block, quantize)
+        // Match the <video>'s object-position (60% on small screens, centred on desktop).
+        const focus = window.innerWidth >= 1024 ? { x: 0.5, y: 0.5 } : { x: 0.6, y: 0.5 }
+        const drawn = renderPixelFrame(canvas, src, box.width, box.height, block, quantize, focus)
         setPixelVisible(drawn)
       } else {
         setPixelVisible(false)
@@ -122,7 +131,7 @@ export function Hero() {
     <section
       ref={sectionRef}
       aria-label="Introduction"
-      className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-meadow pb-[76px] pt-[50svh] sm:block sm:bg-sky sm:h-[100svh] sm:min-h-[680px] sm:max-h-[1080px] sm:p-0"
+      className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-meadow pb-[76px] pt-[50svh] sm:pb-[96px] lg:block lg:h-[100svh] lg:max-h-[1080px] lg:min-h-[680px] lg:bg-sky lg:p-0"
     >
       {/* Poster first (LCP), video fades in once frames arrive. */}
       <img
@@ -132,12 +141,12 @@ export function Hero() {
         aria-hidden="true"
         fetchPriority="high"
         decoding="async"
-        className="absolute inset-x-0 top-0 -z-20 h-[66svh] w-full object-cover object-[60%_50%] sm:inset-0 sm:h-full sm:object-[62%_50%]"
+        className="absolute inset-x-0 top-0 -z-20 h-[66svh] w-full max-w-none object-cover object-[60%_50%] lg:inset-y-0 lg:left-0 lg:right-auto lg:h-full lg:w-[128%] lg:max-w-none lg:object-center"
       />
       <video
         ref={videoRef}
         className={cn(
-          'absolute inset-x-0 top-0 -z-10 h-[66svh] w-full object-cover object-[60%_50%] transition-opacity duration-700 sm:inset-0 sm:h-full sm:object-[62%_50%]',
+          'absolute inset-x-0 top-0 -z-10 h-[66svh] w-full max-w-none object-cover object-[60%_50%] transition-opacity duration-700 lg:inset-y-0 lg:left-0 lg:right-auto lg:h-full lg:w-[128%] lg:max-w-none lg:object-center',
           playing ? 'opacity-100' : 'opacity-0',
         )}
         autoPlay
@@ -151,10 +160,13 @@ export function Hero() {
         aria-hidden="true"
         tabIndex={-1}
       >
+        {/* Best available first; the bundled 540p loop always works, even where
+            the CDN is unreachable (sandboxed previews, strict networks). */}
         <source src={asset(HERO_VIDEO.desktop.local)} type="video/mp4" media="(min-width: 900px)" />
         <source src={HERO_VIDEO.desktop.cdn} type="video/mp4" media="(min-width: 900px)" />
         <source src={asset(HERO_VIDEO.mobile.local)} type="video/mp4" />
         <source src={HERO_VIDEO.mobile.cdn} type="video/mp4" />
+        <source src={asset(HERO_VIDEO.bundled)} type="video/mp4" />
       </video>
 
       {/* Low-res pixel layer (scroll-driven + 8-bit mode). */}
@@ -162,13 +174,13 @@ export function Hero() {
         ref={canvasRef}
         aria-hidden="true"
         className={cn(
-          'pixelated pointer-events-none absolute inset-x-0 top-0 -z-[5] h-[66svh] w-full transition-opacity duration-150 sm:inset-0 sm:h-full',
+          'pixelated pointer-events-none absolute inset-x-0 top-0 -z-[5] h-[66svh] w-full max-w-none transition-opacity duration-150 lg:inset-y-0 lg:left-0 lg:right-auto lg:h-full lg:w-[128%]',
           pixelVisible ? 'opacity-100' : 'opacity-0',
         )}
       />
 
       {/* Gentle grade so the HUD and dialog sit comfortably over a bright sky. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-[4] h-[66svh] bg-[linear-gradient(180deg,rgb(23_32_15/0.28)_0%,transparent_22%,transparent_70%,rgb(46_125_50/0.9)_100%)] sm:inset-0 sm:h-full sm:bg-[linear-gradient(180deg,rgb(23_32_15/0.28)_0%,transparent_22%,transparent_60%,rgb(23_32_15/0.35)_100%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-[4] h-[66svh] bg-[linear-gradient(180deg,rgb(23_32_15/0.28)_0%,transparent_22%,transparent_70%,rgb(46_125_50/0.9)_100%)] lg:inset-0 lg:h-full lg:bg-[linear-gradient(180deg,rgb(23_32_15/0.28)_0%,transparent_22%,transparent_60%,rgb(23_32_15/0.35)_100%)]" />
 
       {/* HUD — top right */}
       <motion.div
@@ -224,7 +236,7 @@ export function Hero() {
       </motion.div>
 
       {/* RPG-style dialogue box */}
-      <div className="relative px-3 sm:absolute sm:inset-x-0 sm:bottom-[104px] sm:px-6 lg:px-10">
+      <div className="relative px-3 sm:px-6 lg:absolute lg:inset-x-0 lg:bottom-[104px] lg:px-10">
         <motion.div style={{ y: boxY }} className="mx-auto max-w-[1400px]">
           <div className="relative max-w-[640px]">
             <div

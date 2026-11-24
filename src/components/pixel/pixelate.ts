@@ -64,6 +64,8 @@ export function renderPixelFrame(
   displayH: number,
   block: number,
   quantize: boolean,
+  /** object-position of the matching <video>/<img>, as 0–1 fractions. */
+  focus: { x: number; y: number } = { x: 0.5, y: 0.5 },
 ): boolean {
   const { w: vw, h: vh } = sourceSize(src)
   if (!vw || !vh) return false
@@ -79,8 +81,8 @@ export function renderPixelFrame(
   const scale = Math.max(cw / vw, ch / vh)
   const sw = cw / scale
   const sh = ch / scale
-  const sx = (vw - sw) / 2
-  const sy = (vh - sh) / 2
+  const sx = (vw - sw) * focus.x
+  const sy = (vh - sh) * focus.y
   ctx.drawImage(src, sx, sy, sw, sh, 0, 0, cw, ch)
 
   if (!quantize) return true
